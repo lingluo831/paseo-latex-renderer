@@ -1,0 +1,35 @@
+{
+  "name": "paseo-latex-renderer",
+  "version": "0.1.0",
+  "description": "Native LaTeX math formula renderer for Paseo desktop and mobile clients",
+  "license": "MIT",
+  "keywords": [
+    "paseo",
+    "paseo-plugin",
+    "latex",
+    "katex",
+    "math",
+    "equations",
+    "markdown"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "node ./scripts/inline-fonts.mjs"
+  },
+  "devDependencies": {
+    "@getpaseo/plugin": "0.8.0",
+    "@tanstack/react-query": "^5.90.11",
+    "@types/katex": "^0.16.8",
+    "@types/react": "~19.2.0",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.1",
+    "zod": "^4.4.3"
+  },
+  "dependencies": {
+    "katex": "^0.18.7",
+    "marked": "^18.0.13"
+  }
+}
