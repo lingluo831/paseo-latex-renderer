@@ -14,6 +14,57 @@ Paseo 的高性能原生 LaTeX 公式渲染插件，适用于 Paseo Desktop（Wi
 
 它支持行内公式、块级公式、多行数学环境、复杂分式、积分、求和、希腊字母等内容，同时保持良好的视觉体验和多端兼容性。
 
+## 快速安装（推荐）
+
+> 面向普通用户：你**不需要**先克隆源码，也**不需要**先执行 `npm install`。
+
+- npm 包主页：<https://www.npmjs.com/package/paseo-latex-renderer>
+- GitHub 仓库：<https://github.com/lingluo831/paseo-latex-renderer>
+
+### 方式 1：从 npm 安装（推荐）
+
+```bash
+paseo plugin add npm:paseo-latex-renderer
+```
+
+### 方式 2：从 GitHub 安装
+
+```bash
+paseo plugin add lingluo831/paseo-latex-renderer
+```
+
+### 方式 3：Paseo 图形界面安装
+
+1. 打开 Paseo 客户端
+2. 进入 **Settings → Plugins**
+3. 在 **Plugin source** 输入：`npm:paseo-latex-renderer`（或 `lingluo831/paseo-latex-renderer`）
+4. 点击 **Install plugin**
+5. 安装完成后重启 Paseo
+
+### 安装后验证
+
+优先使用仓库中已验证的命令：
+
+```bash
+paseo plugin ls
+```
+
+你应看到 `paseo-latex-renderer`，且状态为 `running`。
+
+如果状态是 `disabled`，请先执行：
+
+```bash
+paseo reload
+```
+
+并确认 `~/.paseo/config.json` 启用了插件：
+
+```json
+{
+  "pluginsEnabled": true
+}
+```
+
 ## 功能特性
 
 - **行内公式**：支持 `$E=mc^2$` 和 `\(E=mc^2\)`
@@ -33,6 +84,136 @@ Paseo 的高性能原生 LaTeX 公式渲染插件，适用于 Paseo Desktop（Wi
   - 不支持的 LaTeX 命令会优雅回退，不会导致聊天崩溃
 - **零后台开销**：仅使用客户端插件，不额外启动后台 daemon 子进程
 
+## Markdown 与公式写法示例
+
+````markdown
+行内公式：$E = mc^2$
+
+块级公式：
+\[
+\int_0^1 x^2 \, dx = \frac{1}{3}
+\]
+
+math 代码块：
+```math
+\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+```
+
+latex 代码块：
+```latex
+\begin{aligned}
+\dot{x} &= Ax + Bu \\
+\dot{y} &= Cx + Du
+\end{aligned}
+```
+````
+
+边界行为说明：
+
+- **公式未闭合**：例如只输入了一个起始 `$`，会先按普通文本显示，避免流式输出时闪烁
+- **金额文本**：`$100`、`$100 and $200` 这类金额不会被当作数学公式
+- **转义美元符号**：`\$` 保持美元符号文本含义，不触发公式解析
+
+## 常见操作与故障排查
+
+### 常见操作（开发与调试）
+
+```bash
+paseo plugin disable paseo-latex-renderer
+paseo plugin enable paseo-latex-renderer
+paseo plugin reload paseo-latex-renderer
+paseo plugin remove paseo-latex-renderer
+```
+
+### 故障排查清单
+
+1. **命令找不到（如 `paseo: command not found`）**
+   - 确认 Paseo CLI 已正确安装并在 PATH 中
+   - 在 Windows 可尝试使用打包 CLI：
+     ```bash
+     C:\ProgramData\paseo\resources\bin\paseo.cmd plugin ls
+     ```
+
+2. **插件状态是 `disabled`**
+   - 检查 `~/.paseo/config.json`：`"pluginsEnabled": true`
+   - 执行 `paseo reload`
+   - 再次执行 `paseo plugin ls` 确认状态变为 `running`
+
+3. **公式显示为原始文本**
+   - 先检查公式分隔符是否闭合（`$...$`、`$$...$$`、`\(...\)`、`\[...\]`）
+   - 确认消息内容不是代码块/行内代码（代码区域不会被当作公式）
+   - 未闭合公式在流式输出期间显示原文属于预期保护行为
+
+4. **某些命令在你的环境不可用**
+   - 不同版本文档可能写法不同，建议优先使用本仓库已验证命令：`paseo plugin ls`、`paseo reload`
+
+5. **远程 daemon 场景（Windows Desktop 连接 Ubuntu）**
+   - 在远程 Ubuntu 上安装并启用插件后，Windows 端连接该 daemon 才会生效
+   - 在 Ubuntu 上执行 `paseo plugin ls` 确认 `running`
+
+6. **主题/样式显示不理想**
+   - 插件会继承 Paseo 当前主题的前景色与表面色
+   - 若显示异常，先切换主题并重启 Paseo，再复测同一公式
+
+## 给开发者：源码构建、测试与本地安装
+
+> 仅在你需要二次开发、调试或贡献代码时使用本节。
+
+### 环境要求
+
+- Node.js >= 18
+- Paseo >= 0.8.0
+
+### 克隆后安装依赖、构建与测试
+
+```bash
+cd paseo-latex-renderer
+npm install
+npm run build      # 将 KaTeX 字体内嵌到 client/katex-css.ts
+npm run typecheck  # 对 TypeScript 代码进行类型检查
+npm run test       # 使用 Vitest 运行 31 个单元测试
+```
+
+### Windows 本地源码安装
+
+在运行 Paseo Daemon 的 Windows 主机上安装插件：
+
+```bash
+paseo plugin install "C:\path\to\paseo-latex-renderer"
+```
+
+也可以使用打包好的 CLI：
+
+```bash
+C:\ProgramData\paseo\resources\bin\paseo.cmd plugin install <path>
+```
+
+### 远程 Ubuntu Daemon 源码安装
+
+1. 将 `paseo-latex-renderer` 克隆或复制到 Ubuntu 主机，例如 `/home/user/paseo-latex-renderer`
+2. 安装依赖并构建：
+
+   ```bash
+   cd /home/user/paseo-latex-renderer
+   npm install
+   npm run build
+   npm run typecheck
+   ```
+
+3. 安装到 Ubuntu daemon：
+
+   ```bash
+   paseo plugin install /home/user/paseo-latex-renderer
+   ```
+
+4. 验证状态：
+
+   ```bash
+   paseo plugin ls
+   ```
+
+5. 当 Windows Paseo Desktop 连接到 Ubuntu Daemon 时，Windows 桌面端会自动接收并执行客户端包，从而提供原生 LaTeX 公式渲染能力
+
 ## 目录结构
 
 ```text
@@ -40,7 +221,7 @@ paseo-latex-renderer/
 ├── paseo-plugin.json      # Paseo 清单（插件 ID、依赖和构建配置）
 ├── package.json           # 依赖项和构建/测试脚本
 ├── tsconfig.json          # TypeScript 配置
-├── vitest.config.ts       # Vitest 单元测试配置
+├── vitest.config.mjs      # Vitest 单元测试配置
 ├── index.client.tsx       # 插件客户端入口（Transformer 和 Renderer）
 ├── client/
 │   ├── katex-css.ts       # 内嵌 Base64 WOFF2 字体的 KaTeX CSS
@@ -55,140 +236,6 @@ paseo-latex-renderer/
     └── react-native-mock.ts   # React Native 测试 mock
 ```
 
-## 快速开始与安装
-
-### 环境要求
-
-- Node.js >= 18
-- Paseo >= 0.8.0
-
-### 安装依赖、构建和测试
-
-```bash
-cd paseo-latex-renderer
-npm install
-npm run build      # 将 KaTeX 字体内嵌到 client/katex-css.ts
-npm run typecheck  # 对 TypeScript 代码进行类型检查
-npm run test       # 使用 Vitest 运行 31 个单元测试
-```
-
-### Windows 桌面端安装
-
-在运行 Paseo Daemon 的 Windows 主机上安装插件：
-
-```bash
-paseo plugin install "C:\path\to\paseo-latex-renderer"
-```
-
-也可以使用打包好的 CLI：
-
-```bash
-C:\ProgramData\paseo\resources\bin\paseo.cmd plugin install <path>
-```
-
-检查插件状态：
-
-```bash
-paseo plugin ls
-```
-
-如果 daemon 尚未启用插件：
-
-1. 确认 `~/.paseo/config.json` 中设置了：
-
-   ```json
-   {
-     "pluginsEnabled": true
-   }
-   ```
-
-2. 重新加载 daemon 配置：
-
-   ```bash
-   paseo reload
-   ```
-
-3. 插件状态应从 `disabled` 变为 `running`。
-
-### 远程 Ubuntu Daemon 安装
-
-如果远程 Ubuntu 服务器正在运行 Paseo Daemon，可以按以下步骤安装：
-
-1. 将 `paseo-latex-renderer` 克隆或复制到 Ubuntu 主机，例如 `/home/user/paseo-latex-renderer`。
-2. 安装依赖并构建：
-
-   ```bash
-   cd /home/user/paseo-latex-renderer
-   npm install
-   npm run build
-   npm run typecheck
-   ```
-
-3. 将插件安装到 Ubuntu daemon：
-
-   ```bash
-   paseo plugin install /home/user/paseo-latex-renderer
-   ```
-
-4. 验证安装：
-
-   ```bash
-   paseo plugin ls
-   ```
-
-5. 当 Windows Paseo Desktop 连接到 Ubuntu Daemon 时，Windows 桌面端会自动接收并执行客户端包，从而提供原生 LaTeX 公式渲染能力。
-
-## 常见操作与故障排除
-
-### 更新 / 重新加载插件源码
-
-修改插件代码后执行：
-
-```bash
-npm run typecheck
-paseo plugin reload paseo-latex-renderer
-```
-
-### 启用 / 禁用插件
-
-```bash
-paseo plugin disable paseo-latex-renderer
-paseo plugin enable paseo-latex-renderer
-```
-
-### 移除插件
-
-```bash
-paseo plugin remove paseo-latex-renderer
-```
-
-### 常见问题
-
-- **插件状态显示为 `disabled`**：确认 `~/.paseo/config.json` 中设置了 `"pluginsEnabled": true`，然后执行 `paseo reload`。
-- **公式显示为原始文本**：检查公式分隔符是否正确闭合，例如 `$` 或 `$$`。未闭合公式会暂时保留为原始文本，以避免流式输出时闪烁。
-- **特定 LaTeX 命令无法渲染**：插件会安全回退，不会因为遇到不支持的命令而崩溃；如需更完整的支持，可以扩展解析规则。
-- **主题或样式不一致**：插件会自动继承当前主题的前景色和表面色，通常不需要额外配置。
-
-## 使用示例
-
-```markdown
-$E = mc^2$
-
-\[
-\int_0^1 x^2 \, dx = \frac{1}{3}
-\]
-
-```math
-\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
-```
-
-```latex
-\begin{aligned}
-\dot{x} &= Ax + Bu \\
-\dot{y} &= Cx + Du
-\end{aligned}
-```
-
 ## 适用场景
 
 该插件特别适合以下场景：
@@ -201,4 +248,4 @@ $E = mc^2$
 
 ## 许可证
 
-本项目采用仓库中配置的开源许可证。详细信息请查看仓库中的 `LICENSE` 文件（如果存在）。
+本项目采用仓库中配置的开源许可证。详细信息请查看仓库中的 `LICENSE` 文件。
