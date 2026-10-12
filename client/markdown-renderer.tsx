@@ -437,14 +437,14 @@ function BlockTokenComponent({
     case "table": {
       const tableToken = token as Tokens.Table;
       return (
-        <ScrollView
+        <View
           key={index}
-          horizontal
-          showsHorizontalScrollIndicator={true}
-          style={{ marginVertical: 8 }}
+          style={{ marginVertical: 8, width: "100%", minWidth: 0 }}
         >
           <View
             style={{
+              width: "100%",
+              minWidth: 0,
               borderWidth: 1,
               borderColor: theme.colors.border,
               borderRadius: 6,
@@ -469,7 +469,10 @@ function BlockTokenComponent({
                     borderRightWidth:
                       colIdx < tableToken.header.length - 1 ? 1 : 0,
                     borderRightColor: theme.colors.border,
-                    minWidth: 80,
+                    flexGrow: 1,
+                    flexShrink: 1,
+                    flexBasis: 0,
+                    minWidth: 0,
                   }}
                 >
                   <Text
@@ -508,7 +511,10 @@ function BlockTokenComponent({
                       paddingVertical: 7,
                       borderRightWidth: cellIdx < row.length - 1 ? 1 : 0,
                       borderRightColor: theme.colors.border,
-                      minWidth: 80,
+                      flexGrow: 1,
+                      flexShrink: 1,
+                      flexBasis: 0,
+                      minWidth: 0,
                     }}
                   >
                     <Text
@@ -530,7 +536,7 @@ function BlockTokenComponent({
               </View>
             ))}
           </View>
-        </ScrollView>
+        </View>
       );
     }
 
